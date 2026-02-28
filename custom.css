@@ -59,7 +59,7 @@
 .content main {
     max-width: 900px;
     line-height: 1.8;
-    font-size: 1.125rem;
+    font-size: 1.8rem;
 }
 
 .content main h1 {
@@ -176,7 +176,7 @@ code {
     }
 
     .content main {
-        font-size: 1.05rem;
+        font-size: 1.6rem;
     }
 
     table {
