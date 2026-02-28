@@ -8,7 +8,7 @@ By Jeganathan Velu
 
 A comprehensive 26-module domain reference covering operations, compliance, finance, data architecture, AI/ML, and cross-functional stakeholder partnerships across the global payroll and Employer of Record industry.
 
-**Read online:** [https://androviperian.github.io/global-payroll-eor-cor-guide/](https://androviperian.github.io/global-payroll-eor-cor-guide/)
+**Read online:** [https://androviperian.github.io/guide-to-global-payroll-eor-and-cor-for-analytics-leader/](https://androviperian.github.io/guide-to-global-payroll-eor-and-cor-for-analytics-leader/)
 
 ## Structure
 
@@ -24,7 +24,7 @@ A comprehensive 26-module domain reference covering operations, compliance, fina
 | VIII | 21-25 | Strategy: Competitive Intel, People, Country Launch, AI, Change |
 | IX | 26 | Capstone: Analytics Leader 90-Day Execution |
 
-**26 Modules | 286 Topics | 10 Appendices (A-J)**
+**26 Modules | 286 Topics | 9 Appendices (A-I)**
 
 Each module contains 11 topics with: What/Why, Process Flows, Data Artifacts, Controls, Metrics, Failure Modes, AI Opportunities, Discovery Questions, Exercises, and Business ROI analysis.
 

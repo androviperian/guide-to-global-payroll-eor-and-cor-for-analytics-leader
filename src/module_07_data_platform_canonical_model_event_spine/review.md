@@ -1,0 +1,141 @@
+# Module Review
+
+## Key Takeaways
+
+1. **The medallion architecture (Bronze, Silver, Gold) is the backbone** of payroll data infrastructure. Bronze preserves raw audit trails, Silver enforces the canonical model and data quality, and Gold serves business-ready analytics. Each layer has a distinct purpose, and skipping layers creates gaps you pay for later.
+
+2. **The canonical data model is not optional.** Without a single, agreed-upon schema for Worker, Contract, PayrollRun, Payslip, PayItem, Payment, StatutoryFiling, and the other core entities, cross-country analytics is impossible. The model must handle multi-country schema diversity (India's CTC components, Germany's church tax, UK's NI categories) through a flexible-but-structured approach.
+
+3. **SCD Type 2 on key dimensions is a hard requirement.** Payroll operates in point-in-time reality: "What was the salary when this payroll was run?" is an auditable question. Without SCD2 on Worker, Contract, and related entities, you cannot answer it.
+
+4. **The event spine is the connective tissue** for audit trails, process mining, real-time monitoring, and ML features. Every operational process (onboarding, payroll processing, payment, filing) should emit a complete sequence of events with standardized schemas.
+
+5. **Data quality in payroll is not a nice-to-have — it is a production-critical capability.** A DQ failure in a gold table can mean wrong executive decisions, missed compliance deadlines, or incorrect client reports. The DQ framework must include automated rules, monitoring, alerting, quarantine, and remediation workflows.
+
+6. **Multi-tenant isolation and data governance are non-negotiable.** Cross-tenant data leaks, PII exposure, and retention policy violations carry regulatory and reputational consequences that can threaten the company's existence. Build governance into the platform from Day 1, not as a retrofit.
+
+7. **Technology choices should match your maturity stage.** A 500-worker startup does not need Kafka and Kubernetes. A 50,000-worker platform cannot survive on spreadsheets and cron jobs. Choose tools that serve you today with a clear migration path for tomorrow.
+
+## Quiz — 10 Questions
+
+**1.** What are the three layers of the medallion architecture, and what is the primary purpose of each? Give a specific payroll example for each layer.
+   *Expected answer: The three layers are Bronze, Silver, and Gold. Bronze stores raw, immutable data exactly as received from source systems, serving as the audit trail and replay source — for example, a raw CSV export from the German DATEV payroll engine with original German field names like Personalnummer, Bruttolohn, and Kirchensteuer, appended with ingestion metadata. Silver is the cleaned, standardized layer where data is mapped to the canonical data model, deduplicated, SCD2 history is tracked for dimensions, and DQ rules are applied — for example, a unified worker record with canonical fields like worker_id, full_name, country_code (ISO 3166), annual_salary, salary_currency, annual_salary_usd, valid_from, and valid_to. Gold is the aggregated, business-ready layer optimized for specific analytics use cases and dashboards — for example, a monthly payroll summary table (gold.payroll_run_summary) containing pre-aggregated fields like country, period, total_gross_usd, headcount, error_count, on_time_pay_rate, and avg_processing_days, ready for executive dashboards without any further transformation.*
+
+**2.** Why is SCD Type 2 essential for the Worker entity in a payroll data model? Describe a specific scenario where lack of SCD2 causes an audit failure.
+   *Expected answer: SCD Type 2 is essential because payroll operates in point-in-time reality — every payroll calculation depends on the worker's attributes (salary, tax class, employment status) as they were on the specific date the payroll was run, not as they are today. SCD2 tracks history by creating new rows with valid_from and valid_to timestamps and an is_current flag, enabling queries like "What was worker W-042's salary on March 15, 2026?" Without SCD2, a salary change overwrites the historical value, and when an auditor asks for proof that the March payroll run used the correct salary, the silver table only shows the current (post-raise) salary with no audit trail. This is a material audit failure because regulators can request proof of payroll calculations months or years after the fact, and without temporal history the organization cannot demonstrate the calculation was correct. The canonical model applies SCD2 to both the Worker and Contract entities specifically for this reason.*
+
+**3.** What is the difference between CDC and API polling as ingestion patterns? When would you use each, and what are the failure modes specific to each?
+   *Expected answer: CDC (Change Data Capture) captures every insert, update, and delete from a source database's transaction log (WAL) in near real-time, with latency measured in seconds to minutes — tools like Debezium stream these changes via Kafka. You use CDC when you own or control the source database, such as the platform core EOR application database, where you need continuous, low-latency synchronization. CDC failure modes include the replication slot breaking during database failover, WAL log accumulation if the consumer falls behind, and missed deletes if the CDC configuration does not capture all operation types. API polling periodically calls a source system's REST API on a schedule to fetch new or changed records, with latency measured in minutes to hours depending on the polling interval. You use API polling when you do not own the source database, such as with external local payroll engines (e.g., the Indian payroll engine polled every 4 hours) or client HRIS systems like Workday. API polling failure modes include API rate limiting, authentication token expiry (e.g., SFTP credentials rotating without notification), pagination bugs that only fetch the first page of results causing missing records, and silent schema changes in the API response that break downstream mappings.*
+
+**4.** Name the five dimensions of data quality and rank them in order of criticality for a payroll analytics platform. Justify your ranking.
+   *Expected answer: The five dimensions are Completeness, Accuracy, Validity, Consistency, and Freshness. For a payroll platform, the recommended ranking is: (1) Accuracy — because payroll data directly determines whether people get paid the correct amount; an inaccurate salary or tax calculation results in wrong pay, which costs $50-$500 per incident to remediate. (2) Completeness — because missing records (e.g., 400 active workers dropped from ingestion) mean people do not get paid at all and headcount-based decisions are wrong. (3) Validity — because values violating business rules (net pay > gross pay, negative salary, invalid tax ID formats) indicate calculation errors that produce incorrect payslips. (4) Consistency — because the same fact must agree across tables (worker count in silver.worker must match payslip count for the period and payment count); inconsistency creates "two analysts, two numbers" situations that destroy trust. (5) Freshness — because while stale data causes ops teams to act on outdated information, it is the least likely to cause direct financial harm compared to data that is wrong, missing, invalid, or inconsistent. That said, freshness failures can be critical when filing deadlines are approaching and stale data means missed compliance deadlines.*
+
+**5.** An event with type `payroll_run.variance_flagged` is emitted. What are the required fields in the event envelope? What would the payload contain for a German payroll run where 3 of 142 payslips have net pay variance exceeding 30%?
+   *Expected answer: The required event envelope fields are: event_id (UUID, e.g., evt_7f3a2b1c-...), event_type ("payroll_run.variance_flagged"), event_version (e.g., "2.3"), timestamp (ISO 8601 with milliseconds), actor (containing actor_id, actor_type such as "system", and actor_name such as "Automated Variance Engine"), subject (containing entity_type "payroll_run" and entity_id such as "run_de_2026_03_001"), context (containing country_code "DE", entity_id of the legal entity, client_id, and environment), and metadata (containing source_system, correlation_id linking to the payroll run process, trace_id, schema_version, and partition_key "DE"). The payload for this scenario would contain: flagged_payslips: 3, total_payslips: 142, and a flag_reasons array with an entry for each flagged payslip including payslip_id, worker_id, reason ("net_pay_variance_exceeds_threshold"), variance_pct (e.g., -38.2), and a details string explaining the cause (e.g., "Tax class change from I to III detected"). The payload captures what was flagged and why, without embedding the full payslip data, keeping the event lightweight while enabling downstream investigation.*
+
+**6.** You discover that the silver table `silver.worker` has 15,200 records, but the platform core database shows 15,400 active workers. What DQ rules should have caught this? Walk through the investigation process.
+   *Expected answer: Two DQ rules should have caught this: DQ-001 (Completeness — every active worker should have a current SCD2 record, comparing silver active count against platform active count) and DQ-012 (Consistency — silver worker count must match the CDC source count, reconciled daily). Both are classified as Critical/High severity and should block gold refresh and alert ops. The investigation process begins by checking the ingestion pipeline run log for the platform core CDC pipeline — look for recent failures, row count drops, or increased latency. Next, compare the 200 missing workers: query the platform core for workers WHERE status='active' and LEFT JOIN against silver.worker to identify the specific worker_ids present in the source but absent in silver. Then determine the root cause by checking common patterns: Were these workers recently onboarded (within the CDC lag window)? Did a schema change break the CDC stream? Is there an API pagination bug only fetching the first page? Did a character encoding issue cause name matching to fail during canonical mapping? Check the quarantine table to see if 200 records were quarantined due to validation failures. Finally, once the root cause is identified, remediate by backfilling the missing records and adding or fixing the DQ rule to prevent recurrence.*
+
+**7.** Describe the difference between logical isolation (RLS) and physical isolation (separate schemas) for multi-tenant data architecture. Which would you recommend for a global payroll platform with 500 clients, and why?
+   *Expected answer: Logical isolation uses Row-Level Security (RLS) on shared tables — all clients' data lives in the same silver.worker table, and a client_id filter is automatically applied based on the querying user's role, so Client A's portal query only returns rows WHERE client_id = 'cli_acme'. Physical isolation uses separate database schemas per tenant (schema: cli_acme, schema: cli_beta), where each client has their own copy of every table and access is controlled by schema-level permissions rather than row filters. For 500 clients, the recommended approach is logical isolation (RLS) or a hybrid model, because physical isolation becomes unwieldy beyond 50-100 tenants — every schema change must be applied 500 times, maintenance cost is extremely high, and cross-tenant internal analytics requires UNION across 500 schemas. RLS on shared tables with partitioning by country_code and client_id provides both query performance (via partition pruning) and isolation, while keeping a single schema to maintain. The key risk of RLS is misconfiguration (a missing filter exposes all data), which must be mitigated through quarterly penetration testing, cross-tenant query alerting, and automated RLS policy coverage checks targeting 100% of silver/gold tables. For the most sensitive client-facing data access points, a hybrid approach can layer physical isolation on top for extra protection.*
+
+**8.** What is a metric contract, and why is it necessary? Write a brief metric contract for "on-time pay rate" including formula, exclusions, dimensions, and thresholds.
+   *Expected answer: A metric contract is a formal, versioned definition of a business metric that includes its exact formula, dimensions for slicing, inclusions and exclusions, thresholds, data source, owner, and refresh frequency. It is necessary because without it, two analysts will calculate the same metric differently — for example, Ops might include draft payroll runs while Finance excludes them, producing numbers that disagree by 3x in the same board meeting, destroying trust in the analytics function. A metric contract for on-time pay rate: Formula — COUNT(DISTINCT worker_id WHERE payment.settled_at <= payroll_run.pay_date) / COUNT(DISTINCT worker_id WHERE payroll_run.status IN ('paid','closed')); Exclusions — off-cycle correction runs, workers terminated before pay date, payments reversed and retried (count the retry settlement date, not the original); Dimensions — country_code, client_id, pay_frequency (monthly/semi-monthly/bi-weekly), entity_type (owned/partner); Thresholds — green: >= 99%, amber: 97%-99%, red: < 97%; Data source — gold.payment_ledger joined with gold.payroll_run_summary; Owner — Payroll Ops, approved by VP Payroll Ops + VP Analytics; Refresh — per payroll run completion.*
+
+**9.** A German worker submits a GDPR right-to-erasure request. Describe what must happen in each layer of the data platform (bronze, silver, gold, event store) and the key challenge with immutable bronze tables.
+   *Expected answer: First, validate the request by verifying the worker's identity and checking for exemptions — Germany requires 10-year retention of payroll and tax records, so payroll calculation data and tax filings are exempt and must be retained with the legal basis documented. For non-exempt PII (name, address, email, bank account, date of birth beyond what tax retention requires), the process by layer is: Bronze — this is the key challenge because bronze tables are append-only and immutable by design (they serve as the audit trail and replay source). You cannot delete rows, so the approach is to anonymize PII fields in place, replacing the worker's name with "ANONYMIZED", tax_id with a hash, and bank account with null, while preserving the non-PII structure for audit continuity. Silver — delete or anonymize the worker's records across silver.worker, silver.contract, silver.payslip, silver.payment, and all related tables, being careful to maintain referential integrity (foreign key references should point to a tombstone record or be nullified). Gold — re-aggregate all gold tables that included this worker's data so that pre-aggregated totals no longer carry any trace of individual PII; since gold tables are aggregated, this typically means re-running the aggregation pipeline. Event store — anonymize PII within event payloads (the JSON payload field) for all events where this worker appears as a subject, while preserving the event structure for process integrity. Additionally, mark backups for exclusion from future restores containing this worker's PII. The entire process must complete within 30 days per GDPR Article 17, and a verification PII scan must confirm no residual PII remains.*
+
+**10.** You are building the data platform for an EOR with 5,000 workers across 20 countries. The engineering team has 5 data engineers. Recommend a technology stack (ingestion, storage, compute, transformation, DQ, BI) with justification for each choice. What would change if the worker count was 50,000?
+   *Expected answer: For 5,000 workers (growth stage): Ingestion — Fivetran for managed connectors handling 80% of sources out of the box, plus Debezium (open-source) for CDC on the platform core database, because a 5-engineer team cannot afford to build and maintain custom connectors. Storage — S3/GCS with Delta Lake table format via Databricks, providing immutable bronze storage with ACID transactions, time travel, and schema enforcement for silver/gold layers. Compute — Databricks as the unified analytics platform supporting Spark, SQL, and ML with Unity Catalog for built-in governance and PII controls. Transformation — dbt Cloud for SQL-based transformations with built-in testing, documentation, and a growing semantic layer, allowing analytics engineers to own transformations without Spark expertise. DQ — Great Expectations for complex DQ rules (the 15+ rules across five dimensions) combined with dbt tests for schema-level assertions, both open-source and complementary. BI — Preset (managed Apache Superset) for cost-effective internal self-service analytics plus Tableau for polished executive dashboards. Estimated total cost: $30-70K/month. At 50,000 workers, the key changes would be: ingestion adds Kafka (Confluent Cloud) with Schema Registry for full real-time CDC and event streaming; storage adds region-specific deployments for data residency compliance (e.g., EU region for German worker data per GDPR); compute scales to Spark on Kubernetes plus Snowflake for serving, separating heavy ETL from interactive queries; DQ adds Monte Carlo or Soda for data observability alongside Great Expectations; BI adds embedded analytics for the client portal; and a dedicated data catalog (DataHub or Atlan) with a custom data product catalog becomes essential for managing 50+ data products with SLAs.*
+
+## First 90 Days
+
+**Days 1-30: Assess and Understand**
+- [ ] Map all source systems feeding (or should feed) the analytics platform — document: system name, data type, current ingestion method, freshness, known issues
+- [ ] Audit the current data model — is there a canonical model? How many "sources of truth" exist for worker count?
+- [ ] Assess data quality baseline — pick the top 5 countries by worker count and manually verify: headcount accuracy, payroll cost accuracy, payment success rate accuracy
+- [ ] Interview key stakeholders (VP Ops, VP Finance, VP Compliance, VP Product) using the interview questions from each topic
+- [ ] Document the current technology stack — every tool, who owns it, what it costs, where the pain points are
+- [ ] Shadow the payroll ops team for 3-5 days to understand what data they need and when they need it
+- [ ] Identify the top 3 "data trust" incidents from the past 6 months — times when a dashboard showed wrong data or a report was delayed
+
+**Days 31-60: Build Foundations**
+- [ ] Implement the canonical data model for the 5 core entities: Worker (SCD2), Contract (SCD2), PayrollRun, Payslip, PayItem
+- [ ] Set up the bronze-silver-gold pipeline for the top 3 source systems (platform core DB, top payroll engine, payment system)
+- [ ] Define and implement 15-20 automated DQ rules (at least 3 per core entity)
+- [ ] Build the data quality dashboard showing: overall DQ score, score by dimension, score by country, active incidents
+- [ ] Define metric contracts for the top 10 KPIs (payslip error rate, on-time pay rate, filing on-time rate, cost per payslip, revenue per worker, headcount, etc.)
+- [ ] Design the event taxonomy (at least the payroll_run.* and payment.* domains) and propose it to the engineering team
+- [ ] Stand up the first version of the semantic layer (dbt metrics or equivalent) with 5 governed metrics
+
+**Days 61-90: Operationalize and Deliver**
+- [ ] Launch the Payroll Operations Weekly Dashboard (8 metrics, drill-down by country/client/run)
+- [ ] Implement freshness SLAs for all ingestion pipelines with automated alerting
+- [ ] Complete PII classification for all silver/gold tables — tag every column, implement masking for non-authorized roles
+- [ ] Implement RLS on all client-facing data assets (silver/gold tables accessed by client portal or client-facing reports)
+- [ ] Publish the first 3 data products in an internal catalog with: description, schema, DQ score, refresh SLA, owner
+- [ ] Present the "State of the Data Platform" to the leadership team: current maturity, gaps identified, 6-month roadmap, resource ask
+- [ ] Establish the weekly data quality review cadence with data engineering and domain leads
+
+---
+
+## How This Module Makes You Valuable as an Analytics Leader
+
+This module maps directly to the three pillars of the analytics leader evolution path:
+
+**BI + Lakehouse Leader:** The medallion architecture, canonical data model, technology stack, and data quality framework are the bread and butter of this pillar. You are not learning new concepts here — you are learning how to apply your existing lakehouse expertise to the specific challenges of payroll data (multi-country schema diversity, PII density, temporal precision requirements, regulatory audit trails). Your ability to design and build this platform is the table-stakes qualification for the role.
+
+**Operational Intelligence Architect:** The event spine, process mining capabilities, semantic layer, and metric contracts transform raw data into operational intelligence. You are not just building a data warehouse — you are building the nervous system that tells the organization where payroll operations are working well, where they are failing, and where they are about to fail. The 100+ metrics defined across the 11 topics in this module give you a comprehensive measurement framework that most payroll companies lack.
+
+**AI-Augmented Compliance and Payroll Systems Leader:** The AI opportunities cataloged across every topic — automated schema mapping, anomaly detection on event patterns, predictive process mining, intelligent DQ rules, PII auto-detection, natural language query interfaces — are the specific, practical applications where AI adds value in this domain. You now know the inputs, outputs, and guardrails for each. You can build the business case, scope the project, and define the success criteria — which is exactly what an analytics leader does.
+
+**In interviews and in the role, this module enables you to:**
+- Design the data platform architecture from scratch and present it to the CTO
+- Define and enforce data quality standards that the ops team trusts
+- Build metric contracts that eliminate the "two analysts, two numbers" problem
+- Navigate the GDPR/PII/data residency landscape with confidence
+- Evaluate and select the right technology stack for the company's stage
+- Present a credible 90-day and 18-month roadmap on Day 1
+
+---
+
+## Glossary
+
+| Term | Definition |
+|------|-----------|
+| **Medallion Architecture** | Three-layer data architecture (Bronze, Silver, Gold) that separates raw data, cleaned/standardized data, and business-ready analytics data |
+| **Bronze Layer** | The raw, immutable data layer where source data is stored exactly as received, serving as the audit trail and replay source |
+| **Silver Layer** | The cleaned, standardized layer where data is mapped to the canonical model, deduplicated, and quality-checked |
+| **Gold Layer** | The aggregated, business-ready layer optimized for specific analytics use cases, dashboards, and ML features |
+| **Canonical Data Model** | A single, agreed-upon schema for representing core business entities across all source systems and countries |
+| **SCD Type 2 (Slowly Changing Dimension)** | A dimension modeling technique that tracks history by creating new rows with valid_from/valid_to dates, enabling point-in-time queries |
+| **Event Spine** | The chronological stream of all business events across the platform, forming the foundation for audit trails, process mining, and real-time monitoring |
+| **Event Sourcing** | A pattern where state changes are stored as a sequence of events, enabling state reconstruction by replaying events |
+| **CDC (Change Data Capture)** | An ingestion pattern that captures every insert, update, and delete from a source database's transaction log in near real-time |
+| **API Polling** | An ingestion pattern that periodically calls a source system's API to fetch new or changed records |
+| **Schema-on-Read** | Validating data structure at read time rather than write time; common for bronze layer where raw data is preserved as-is |
+| **Schema-on-Write** | Enforcing data structure at write time; applied when promoting data from bronze to silver |
+| **Data Quality (DQ)** | The practice of measuring, monitoring, and enforcing the trustworthiness of data across dimensions: completeness, freshness, validity, consistency, accuracy |
+| **Quarantine** | Isolating records that fail data quality checks in a separate table for investigation and remediation, preventing bad data from reaching consumers |
+| **Row-Level Security (RLS)** | A database access control mechanism that restricts which rows a user can see based on their role or tenant membership |
+| **Multi-Tenant Architecture** | A data architecture that serves multiple clients (tenants) from shared infrastructure while maintaining strict data isolation |
+| **Data Residency** | The regulatory requirement that personal data of citizens in certain countries must be stored within specific geographic regions |
+| **Right to Erasure** | A GDPR right (Article 17) allowing data subjects to request deletion of their personal data, subject to certain exemptions |
+| **PII (Personally Identifiable Information)** | Data that can identify a specific individual, such as name, tax ID, bank account, salary, date of birth |
+| **Dynamic Data Masking** | Automatically hiding or obfuscating sensitive data based on the querying user's role, without modifying the underlying data |
+| **Golden Record** | The single, authoritative version of an entity (especially a worker) assembled from multiple source systems through entity resolution |
+| **Entity Resolution** | The process of determining whether records from different systems refer to the same real-world entity, using deterministic or probabilistic matching |
+| **Semantic Layer** | An abstraction layer between raw data and consumers that provides business-friendly definitions of metrics, dimensions, and relationships |
+| **Metric Contract** | A formal, versioned definition of a business metric including: formula, dimensions, inclusions/exclusions, thresholds, owner, and data source |
+| **Data Product** | A curated, documented, quality-assured dataset with defined SLAs, ownership, and consumer documentation — not just a raw table |
+| **Dead Letter Queue (DLQ)** | A holding area for events or records that failed processing, awaiting investigation and remediation |
+| **Idempotency** | The property that processing the same event or record multiple times produces the same result as processing it once — critical for data pipeline reliability |
+| **Partition Pruning** | A query optimization technique where the query engine skips partitions that cannot contain relevant data, improving performance |
+| **Delta Lake / Iceberg** | Open-source table formats that add ACID transactions, schema enforcement, and time travel to data lake storage (S3/GCS) |
+| **Feature Store** | A centralized repository for ML features that ensures consistent feature computation across training and serving |
+| **ROPA (Record of Processing Activities)** | A GDPR Article 30 requirement to maintain documentation of all personal data processing activities, including purposes, categories, and retention |
+| **Correlation ID** | A unique identifier that links related events across different systems and domains, enabling end-to-end traceability |
+| **Process Mining** | The practice of analyzing event logs to discover, monitor, and improve business processes — identifying bottlenecks, deviations, and optimization opportunities |
+| **dbt (data build tool)** | A SQL-based transformation framework that enables analytics engineers to define, test, and document data transformations using version-controlled models |
+| **Great Expectations** | An open-source data quality framework that enables defining, running, and monitoring data validation rules (expectations) against datasets |
+| **Debezium** | An open-source CDC platform that captures row-level changes from database transaction logs and streams them as events |

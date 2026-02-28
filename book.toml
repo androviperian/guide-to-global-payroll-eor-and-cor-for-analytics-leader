@@ -10,12 +10,12 @@ build-dir = "book"
 create-missing = false
 
 [output.html]
-default-theme = "navy"
+default-theme = "light"
 preferred-dark-theme = "navy"
-git-repository-url = "https://github.com/androviperian/global-payroll-eor-cor-guide"
+git-repository-url = "https://github.com/androviperian/guide-to-global-payroll-eor-and-cor-for-analytics-leader"
 additional-css = ["custom.css"]
 no-section-label = false
-site-url = "/global-payroll-eor-cor-guide/"
+site-url = "/guide-to-global-payroll-eor-and-cor-for-analytics-leader/"
 
 [output.html.search]
 enable = true

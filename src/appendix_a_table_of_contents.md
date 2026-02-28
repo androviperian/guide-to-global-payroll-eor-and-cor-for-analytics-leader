@@ -387,8 +387,7 @@
 - Appendix E — Event Taxonomy
 - Appendix F — Country Reference Cards
 - Appendix G — Discovery Questions
-- Appendix H — 26-Week Study Plan
-- Appendix I — Cross-Module Reference Map
-- Appendix J — ROI Calculator Templates
+- Appendix H — Cross-Module Reference Map
+- Appendix I — ROI Calculator Templates
 
 ---

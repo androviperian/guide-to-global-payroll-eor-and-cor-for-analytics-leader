@@ -11,7 +11,7 @@
     <span class="badge">26 Modules</span>
     <span class="badge">286 Topics</span>
     <span class="badge">9 Parts</span>
-    <span class="badge">10 Appendices</span>
+    <span class="badge">9 Appendices</span>
   </div>
 </div>
 
@@ -43,7 +43,7 @@ Every module concludes with Key Takeaways, a 10-question Quiz with expected answ
 
 **Part IX — Capstone (Module 26)** is your 90-day execution plan as an analytics leader.
 
-**Appendices A-J** provide master references: table of contents, glossary, metrics library, canonical data model, event taxonomy, country reference cards, discovery questions, 26-week study plan, cross-module reference map, and ROI calculator templates.
+**Appendices A-I** provide master references: table of contents, glossary, metrics library, canonical data model, event taxonomy, country reference cards, discovery questions, cross-module reference map, and ROI calculator templates.
 
 ---
 
@@ -52,4 +52,4 @@ Every module concludes with Key Takeaways, a 10-question Quiz with expected answ
 - **New to the domain?** Start with Module 1 and work through sequentially.
 - **Preparing for interviews?** Focus on Modules 1-6 (core domain) and Module 26 (execution plan).
 - **Already in the role?** Jump to the module most relevant to your current challenge.
-- **Building a study plan?** See Appendix H for a structured 26-week curriculum.
+- **Looking for cross-references?** See Appendix H for a cross-module reference map.

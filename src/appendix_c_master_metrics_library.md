@@ -1,6 +1,33 @@
 # C. Master Metrics Library
 
-> All metrics consolidated from all modules, organized by function. Each metric includes: Name, Definition, Target, Frequency, and Owner.
+> All metrics consolidated from all 26 modules, organized by function. Each metric includes: Name, Definition, Target, Frequency, and Owner.
+
+### Module-to-Section Reference
+
+| Module(s) | Metrics Section |
+|-----------|----------------|
+| M1: Operating Model, M3: Payroll Engine | C.1 Payroll Operations |
+| M2: Worker Lifecycle | C.17 Worker Lifecycle & Data Quality |
+| M5: Compliance, M6: EOR/COR Risk | C.2 Compliance |
+| M4: Treasury/Payments/FX, M15: Finance | C.3 Finance and Treasury |
+| M7: Data Platform | C.4 Data Platform |
+| M8: Master Data Management | C.12 Master Data Management |
+| M9: Applied ML/AI | C.18 ML/AI Model Performance |
+| M10: Reliability & Security | C.19 Reliability, Security & Incident |
+| M11: Product Management | C.5 Product |
+| M12: Product Engineering | C.9 Engineering |
+| M13: Client Success, M14: Customer Support | C.8 Client Success and Support |
+| M16: Advanced Finance | C.13 Advanced Finance and Valuation |
+| M17: Sales Analytics | C.6 Sales |
+| M18: TAM/Market Sizing | C.14 Market Sizing and TAM |
+| M19: Marketing Analytics | C.7 Marketing |
+| M20: Partner/Vendor Ecosystem | C.11 Partner and Vendor |
+| M21: Competitive Intelligence | C.20 Competitive Intelligence |
+| M22: People Analytics | C.10 People and HR |
+| M23: Country Launch | C.21 Country Launch |
+| M24: AI/ML Strategy | C.22 AI/ML Strategy & Governance |
+| M25: Change Management | C.15 Change Management |
+| M26: Analytics Leader Execution | C.16 ROI & Value Measurement |
 
 ## C.1 Payroll Operations Metrics
 
@@ -274,6 +301,104 @@
 | Analytics Cost per Employee | Total Analytics Spend / Managed Worker Count | $/worker | < $50 PEPM | Monthly | M1, M26 |
 | Time to Value | Days from Initiative Start to First Measurable Benefit | Days | < 90 | Per initiative | All modules Topic 9 |
 | Attribution Confidence Score | Statistical Confidence in Analytics Contribution | % | > 80% | Per initiative | M9, M24 |
+
+## C.17 Worker Lifecycle & Data Quality Metrics
+
+| Metric | Definition | Target | Frequency | Owner |
+|--------|-----------|--------|-----------|-------|
+| Onboarding cycle time | Business days from client request to worker's first payroll-ready status | < 5 days (EOR), < 3 days (COR) | Per onboarding | Onboarding Ops |
+| Onboarding first-time-right rate | % of onboardings completed without rework or data corrections | > 95% | Monthly | Onboarding Ops |
+| Contract generation accuracy | % of employment contracts generated with zero errors | > 99% | Monthly | Legal Ops |
+| Contract turnaround time | Business days from request to fully executed contract | < 3 days | Per contract | Legal Ops |
+| Worker data completeness score | % of required fields populated in worker profile at onboarding | 100% for mandatory fields | Per onboarding | Data Quality |
+| Data quality score | Composite score across completeness, accuracy, timeliness, consistency | > 95% | Monthly | Data Quality |
+| Duplicate record rate | % of worker records identified as potential duplicates | < 0.5% | Monthly | Data Quality |
+| Offboarding cycle time | Business days from termination request to final pay and benefits closure | Per country SLA | Per offboarding | Offboarding Ops |
+| Offboarding compliance rate | % of offboardings completing all statutory requirements (final pay, certificates, filings) | 100% | Monthly | Compliance |
+| Worker status accuracy | % of worker records with correct current employment status | > 99.5% | Monthly | Data Quality |
+| Amendment processing time | Business days to process contract amendments (salary change, role change) | < 2 days | Per amendment | Ops Lead |
+| Benefits enrollment accuracy | % of workers enrolled in correct benefits within SLA | > 99% | Monthly | Benefits Ops |
+
+## C.18 ML/AI Model Performance Metrics
+
+| Metric | Definition | Target | Frequency | Owner |
+|--------|-----------|--------|-----------|-------|
+| Model accuracy | Prediction accuracy for classification models (precision, recall, F1) | > 90% F1 for production models | Per model refresh | ML Engineering |
+| Model latency (P95) | 95th percentile inference latency | < 200ms for real-time, < 5min for batch | Daily | ML Engineering |
+| Model drift score | Statistical distance between training and production feature distributions | Below drift threshold | Weekly | MLOps |
+| Prediction coverage | % of eligible items scored by the model vs. falling back to rules | > 95% | Daily | ML Engineering |
+| Exception triage accuracy | % of ML-prioritized exceptions that were true positives | > 85% | Monthly | ML Engineering |
+| Automation rate | % of eligible decisions fully automated by ML (no human review) | Track trend by use case | Monthly | ML Engineering |
+| Human override rate | % of ML recommendations overridden by human reviewers | < 15% (trending down) | Monthly | Ops Lead |
+| Feature freshness | % of model input features updated within expected SLA | > 99% | Daily | Data Engineering |
+| Model retraining frequency | Days since last model retrain | < 30 days for active models | Weekly | MLOps |
+| LLM hallucination rate | % of LLM-generated outputs flagged as factually incorrect by reviewers | < 5% | Weekly | ML Engineering |
+| Risk score calibration | Correlation between predicted risk score and observed error rate | R² > 0.7 | Monthly | ML Engineering |
+| Anomaly detection precision | % of flagged anomalies that are true anomalies (not false alarms) | > 80% | Monthly | ML Engineering |
+
+## C.19 Reliability, Security & Incident Metrics
+
+| Metric | Definition | Target | Frequency | Owner |
+|--------|-----------|--------|-----------|-------|
+| System uptime | % of time core payroll platform is available | > 99.9% | Monthly | SRE |
+| Mean time to detect (MTTD) | Average time from incident start to detection | < 5 min for P1 | Per incident | SRE |
+| Mean time to resolve (MTTR) | Average time from detection to resolution | < 1 hr P1, < 4 hr P2 | Per incident | SRE |
+| Incident rate | Number of P1/P2 incidents per month | < 2 P1, < 5 P2 | Monthly | SRE |
+| Payroll-impacting incident rate | Incidents that delayed or affected payroll processing | 0 per quarter (target) | Monthly | SRE |
+| Change failure rate | % of deployments causing incidents or requiring rollback | < 5% | Monthly | Engineering |
+| Deployment frequency | Number of production deployments per week | Track trend | Weekly | Engineering |
+| Security vulnerability SLA compliance | % of vulnerabilities remediated within SLA (Critical < 24hr, High < 7d) | > 95% | Monthly | Security |
+| Penetration test finding closure rate | % of pentest findings remediated within agreed timeline | > 90% | Quarterly | Security |
+| SOC 2 control effectiveness | % of SOC 2 controls operating effectively | 100% | Quarterly | Compliance |
+| GDPR data subject request SLA | % of DSARs completed within 30-day regulatory deadline | 100% | Monthly | Privacy |
+| Disaster recovery test success rate | % of DR tests achieving RTO/RPO targets | 100% | Semi-annually | SRE |
+| Audit finding closure rate | % of internal/external audit findings remediated on time | > 95% | Quarterly | Compliance |
+
+## C.20 Competitive Intelligence Metrics
+
+| Metric | Definition | Target | Frequency | Owner |
+|--------|-----------|--------|-----------|-------|
+| Win rate vs. named competitors | % of competitive deals won, segmented by competitor | Track and improve trend | Monthly | Sales Analytics |
+| Competitive deal cycle time | Average sales cycle length for competitive vs. uncontested deals | Track delta | Monthly | Sales Analytics |
+| Feature parity score | % of competitor features matched or exceeded | > 80% for top 3 competitors | Quarterly | Product |
+| Battlecard usage rate | % of competitive deals where sales used updated battlecards | > 70% | Monthly | Sales Enablement |
+| Battlecard effectiveness | Win rate lift when battlecards are used vs. not used | > 10% lift | Quarterly | Sales Analytics |
+| Competitive pricing index | Platform pricing vs. competitor median by country tier | Within strategic band | Quarterly | Pricing/Strategy |
+| Market share estimate | Estimated share of addressable market by region/segment | Track trend | Quarterly | Strategy |
+| Competitive intelligence freshness | % of competitor profiles updated within last 90 days | > 90% | Monthly | Strategy |
+| Deal loss reason analysis | Categorized reasons for competitive losses (price, feature, service, other) | Actionable insights | Monthly | Sales Analytics |
+| Time to competitive response | Business days from competitor announcement to internal brief | < 5 days | Per event | Strategy |
+
+## C.21 Country Launch Metrics
+
+| Metric | Definition | Target | Frequency | Owner |
+|--------|-----------|--------|-----------|-------|
+| Launch velocity | Business days from launch decision to first payroll run | < 90 days (owned entity), < 45 days (partner) | Per launch | Launch PM |
+| Time to first client | Days from country go-live to first paying client | < 60 days | Per launch | Sales |
+| Country ramp rate | Workers added per month in first 6 months post-launch | Per business case | Monthly | Ops Lead |
+| Launch compliance readiness score | % of statutory, tax, and labor law requirements validated before go-live | 100% | Pre-launch gate | Compliance |
+| Post-launch error rate | Payroll error rate in first 3 pay cycles vs. mature country baseline | < 2x mature baseline | Per payroll run | Ops Lead |
+| Entity setup cost | Total cost to establish legal entity or partner arrangement | Within budget ± 10% | Per launch | Finance |
+| Country break-even timeline | Months from launch to positive unit economics | < 18 months | Monthly | Finance |
+| Partner readiness score | Composite score of in-country partner capabilities at launch | > 80% | Pre-launch gate | Partner Ops |
+| Knowledge base completeness | % of country-specific payroll rules documented and validated | 100% before go-live | Pre-launch gate | Knowledge Ops |
+| Client satisfaction (new country) | NPS/CSAT for clients using newly launched country in first 6 months | > 8/10 CSAT | Monthly | Client Success |
+
+## C.22 AI/ML Strategy & Governance Metrics
+
+| Metric | Definition | Target | Frequency | Owner |
+|--------|-----------|--------|-----------|-------|
+| AI initiative portfolio value | Total projected annual value of active AI initiatives | Track growth | Quarterly | Analytics Leader |
+| AI adoption rate | % of eligible processes using AI/ML augmentation | Track and grow | Quarterly | Analytics Leader |
+| AI governance compliance | % of AI models with completed risk assessment and documentation | 100% | Quarterly | ML Governance |
+| Responsible AI score | Composite score across fairness, transparency, accountability dimensions | > 80% | Quarterly | ML Governance |
+| Build vs. buy optimization | Cost comparison of in-house vs. vendor AI solutions for each use case | Optimal allocation | Semi-annually | Analytics Leader |
+| AI talent readiness | % of analytics team with AI/ML proficiency (training completed) | > 70% | Quarterly | People Analytics |
+| Model portfolio health | % of production models meeting performance SLAs | > 90% | Monthly | MLOps |
+| AI cost efficiency | Total AI infrastructure cost per prediction/inference | Declining trend | Monthly | Engineering |
+| Time to model deployment | Days from model development complete to production deployment | < 14 days | Per model | MLOps |
+| AI risk incident rate | Number of AI-related incidents (bias, errors, compliance) per quarter | 0 critical, < 3 minor | Quarterly | ML Governance |
+| Cross-functional AI adoption | Number of departments actively using AI tools built by analytics team | Track growth | Quarterly | Analytics Leader |
 
 ---
 

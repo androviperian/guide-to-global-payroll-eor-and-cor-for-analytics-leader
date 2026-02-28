@@ -12,7 +12,7 @@
     width: 100%;
     height: auto;
     border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     margin: 1rem auto 2rem;
     display: block;
 }
@@ -20,7 +20,7 @@
 .tagline {
     font-size: 1.5rem;
     font-weight: 300;
-    color: #00d4aa;
+    color: #008f74;
     letter-spacing: 2px;
     margin: 1.5rem 0 1rem;
 }
@@ -44,12 +44,12 @@
 .badge {
     display: inline-block;
     padding: 0.5rem 1.2rem;
-    border: 1px solid #00d4aa;
+    border: 2px solid #00a88a;
     border-radius: 20px;
     font-size: 0.85rem;
     letter-spacing: 1px;
-    color: #00d4aa;
-    font-weight: 500;
+    color: #008f74;
+    font-weight: 600;
 }
 
 /* =============================================
@@ -58,12 +58,13 @@
 
 .content main {
     max-width: 900px;
-    line-height: 1.75;
-    font-size: 1rem;
+    line-height: 1.8;
+    font-size: 1.125rem;
 }
 
 .content main h1 {
-    border-bottom: 2px solid #00d4aa;
+    color: #1a1a1a;
+    border-bottom: 2px solid #00a88a;
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
 }
@@ -71,17 +72,18 @@
 .content main h2 {
     margin-top: 3rem;
     padding-top: 1.5rem;
-    border-top: 1px solid var(--table-border-color);
+    color: #2c3e50;
+    border-top: 1px solid #e0e0e0;
 }
 
 .content main h3 {
     margin-top: 2rem;
-    color: var(--sidebar-active);
+    color: #008f74;
 }
 
 .content main blockquote {
-    border-left: 4px solid #00d4aa;
-    background: rgba(0, 212, 170, 0.05);
+    border-left: 4px solid #00a88a;
+    background: rgba(0, 168, 138, 0.06);
     padding: 1rem 1.5rem;
     margin: 1.5rem 0;
     border-radius: 0 4px 4px 0;
@@ -99,31 +101,32 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin: 1.5rem 0;
-    font-size: 0.9rem;
+    font-size: 0.95em;
     overflow-x: auto;
     display: block;
 }
 
 table thead {
-    background: rgba(0, 212, 170, 0.1);
+    background: rgba(0, 168, 138, 0.08);
 }
 
 table th {
     padding: 0.75rem 1rem;
     text-align: left;
     font-weight: 600;
-    border-bottom: 2px solid #00d4aa;
+    color: #2c3e50;
+    border-bottom: 2px solid #00a88a;
     white-space: nowrap;
 }
 
 table td {
     padding: 0.6rem 1rem;
-    border-bottom: 1px solid var(--table-border-color);
+    border-bottom: 1px solid #e8e8e8;
     vertical-align: top;
 }
 
 table tr:hover {
-    background: rgba(0, 212, 170, 0.03);
+    background: rgba(0, 168, 138, 0.04);
 }
 
 /* =============================================
@@ -173,7 +176,7 @@ code {
     }
 
     .content main {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
     }
 
     table {
