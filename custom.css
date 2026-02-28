@@ -1,0 +1,186 @@
+/* =============================================
+   Cover Page / Introduction Styles
+   ============================================= */
+
+.cover-page {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.cover-image {
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    margin: 1rem auto 2rem;
+    display: block;
+}
+
+.tagline {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #00d4aa;
+    letter-spacing: 2px;
+    margin: 1.5rem 0 1rem;
+}
+
+.author {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--fg);
+    opacity: 0.8;
+    margin: 0.5rem 0 2rem;
+}
+
+.cover-stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid #00d4aa;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: #00d4aa;
+    font-weight: 500;
+}
+
+/* =============================================
+   Typography Improvements
+   ============================================= */
+
+.content main {
+    max-width: 900px;
+    line-height: 1.75;
+    font-size: 1rem;
+}
+
+.content main h1 {
+    border-bottom: 2px solid #00d4aa;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.content main h2 {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--table-border-color);
+}
+
+.content main h3 {
+    margin-top: 2rem;
+    color: var(--sidebar-active);
+}
+
+.content main blockquote {
+    border-left: 4px solid #00d4aa;
+    background: rgba(0, 212, 170, 0.05);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+}
+
+blockquote p {
+    margin: 0.5rem 0;
+}
+
+/* =============================================
+   Table Formatting
+   ============================================= */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+    overflow-x: auto;
+    display: block;
+}
+
+table thead {
+    background: rgba(0, 212, 170, 0.1);
+}
+
+table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #00d4aa;
+    white-space: nowrap;
+}
+
+table td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--table-border-color);
+    vertical-align: top;
+}
+
+table tr:hover {
+    background: rgba(0, 212, 170, 0.03);
+}
+
+/* =============================================
+   Code Block Improvements
+   ============================================= */
+
+pre {
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+code {
+    font-size: 0.88em;
+}
+
+/* =============================================
+   Print Styles
+   ============================================= */
+
+@media print {
+    .cover-image {
+        max-width: 400px;
+    }
+
+    .content main h2 {
+        page-break-before: always;
+    }
+
+    table {
+        font-size: 0.8rem;
+    }
+}
+
+/* =============================================
+   Responsive Adjustments
+   ============================================= */
+
+@media (max-width: 768px) {
+    .cover-image {
+        max-width: 100%;
+    }
+
+    .cover-stats {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .content main {
+        font-size: 0.95rem;
+    }
+
+    table {
+        font-size: 0.8rem;
+    }
+
+    table th, table td {
+        padding: 0.4rem 0.6rem;
+    }
+}

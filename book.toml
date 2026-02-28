@@ -1,0 +1,26 @@
+[book]
+title = "A Guide to Global Payroll, EOR & COR for an Analytics Leader"
+authors = ["Jeganathan Velu"]
+description = "The Operational Intelligence Playbook — 26 modules covering operations, compliance, finance, data architecture, AI/ML, and cross-functional partnerships across the global payroll and Employer of Record industry."
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[output.html]
+default-theme = "navy"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/androviperian/global-payroll-eor-cor-guide"
+additional-css = ["custom.css"]
+no-section-label = false
+site-url = "/global-payroll-eor-cor-guide/"
+
+[output.html.search]
+enable = true
+limit-results = 30
+use-boolean-and = true
+boost-title = 2
+expand = true
+heading-split-level = 2
